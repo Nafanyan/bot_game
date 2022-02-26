@@ -1,12 +1,11 @@
 from aiogram.utils import executor
 from create_bot import dp
-from aiogram import types, Dispatcher
-
 from handlers import sweet_game_head
+from bot_game.handlers import main_command
 
 sweet_game_head.registers_handlers_sweet(dp)
 
-dp.register_message_handler(start_sweet, commands=['play_sweet'],state = None)
+dp.register_message_handler(main_command.start, commands=['start'])
 
 
 print('Online')
