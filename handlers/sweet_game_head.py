@@ -16,14 +16,16 @@ class stage_sweet(StatesGroup):
 async def start_sweet(message : types.Message):
     id = message.from_user.id
     last_value = int(wsu.read_status(id)['play_sweet'][0])
-    if (last_value != total_sweets):
+    if (last_value != total_sweets and last_value != 0):
         await message.answer(f'Ухты, у тебя есть незаконченная игра где осталось ещё {last_value} конфет/ы. \n'
                              f'Надо её закончить, кто будет ходить первым, Я или Ты?')
         sweet_game_algo.init_sweet(last_value, max_sweet)
     else:
+        sweet_game_algo.init_sweet(total_sweets, max_sweet)
         await message.answer(f'Правила игры!\n'
                              f'1. Всего {total_sweets} конфет, брать можешь не больше {max_sweet}\n'
                              f'2. Ходим по очереди\n'
+                             f'3. Кто последний берет конфеты тот и победил.\n'
                              f'Кто будет ходить первым, Я или Ты?')
     await stage_sweet.choice.set()
 
@@ -44,32 +46,38 @@ async def chouse_step(message : types.Message, state : stage_sweet):
         await stage_sweet.choice.set()
 
 async def load_num(message : types.Message, state : stage_sweet):
-    id = message.from_user.id
-    num = int(message.text)
-    winner = True
-    if (sweet_game_algo.check(num)):
-        sweet_game_algo.player_step(num)
-    else:
-        await message.answer(f'Ты не можешь взять такое количество конфет')
-        await stage_sweet.now_game.set()
-    if(sweet_game_algo.remained_sweet() != 0 and sweet_game_algo.check(num)):
-        await message.answer(f'Осталось {sweet_game_algo.remained_sweet()}')
-        await message.answer(f'Я взял {sweet_game_algo.bot_step()}\n Осталось {sweet_game_algo.remained_sweet()}')
-        winner = False
+    try:
+        id = message.from_user.id
+        num = int(message.text)
+        winner = True
+        if (sweet_game_algo.check(num)):
+            sweet_game_algo.player_step(num)
+        else:
+            await message.answer(f'Ты не можешь взять такое количество конфет')
+            await stage_sweet.now_game.set()
+        if (sweet_game_algo.remained_sweet() != 0 and sweet_game_algo.check(num)):
+            await message.answer(f'Осталось {sweet_game_algo.remained_sweet()}')
+            await message.answer(f'Я взял {sweet_game_algo.bot_step()}\nОсталось {sweet_game_algo.remained_sweet()}')
+            winner = False
 
-    new_status = wsu.read_status(id)
-    if (sweet_game_algo.remained_sweet() > 0):
-        await stage_sweet.now_game.set()
-        new_status['play_sweet'][0] = sweet_game_algo.remained_sweet()
-        wsu.change_status( new_status, id)
-    else:
-        if (winner): await message.answer('Поздравляю, победа за тобой')
-        else: await message.answer('Увы, но победа за мной')
-        await message.answer(f'Хочешь ещё раз сыграть?\n'
-                             f'Напиши "да", если хочешь, или "нет", если наигрался.')
-        new_status['play_sweet'][0] = total_sweets
-        wsu.change_status( new_status, id)
-        await stage_sweet.end_game.set()
+        new_status = wsu.read_status(id)
+        if (sweet_game_algo.remained_sweet() > 0):
+            await stage_sweet.now_game.set()
+            new_status['play_sweet'][0] = sweet_game_algo.remained_sweet()
+            wsu.change_status(new_status, id)
+        else:
+            if (winner):
+                await message.answer('Поздравляю, победа за тобой')
+            else:
+                await message.answer('Увы, но победа за мной')
+            await message.answer(f'Хочешь ещё раз сыграть?\n'
+                                 f'Напиши "да", если хочешь, или "нет", если наигрался.')
+            new_status['play_sweet'][0] = total_sweets
+            wsu.change_status(new_status, id)
+            await stage_sweet.end_game.set()
+    except: await message.answer('Пиши ответ целым числом, пожалуйста.')
+
+
 
 
 
