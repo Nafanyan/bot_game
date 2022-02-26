@@ -10,10 +10,13 @@ def init_sweet (max_sweet, max_step):
 
 #ход бота
 def bot_step():
-
-    answer = randint(1,6)
-    while (not(check(answer))):
-        answer = randint(1, 6)
+    answer = 1
+    if (now_sweet <= 6): answer = now_sweet
+    else:
+        for i in range(1, take_sweet):
+            if ((now_sweet - answer) % (take_sweet + 1) == 0):
+                break
+            answer = answer + 1
     init_sweet(now_sweet - answer,take_sweet)
     return answer
 
@@ -29,3 +32,5 @@ def check(num):
 # Возврат оставшихся конфет
 def remained_sweet():
     return now_sweet
+
+

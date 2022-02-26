@@ -24,3 +24,22 @@ def add_new_user(id):
         info.writelines(f'{i} ')
     info.close()
 
+# Добавляем к имеющимся пользователям новые функции (если будет расширение функционала)
+def add_new_func(list_id):
+    old_source = read_storage()
+    info = open('info_users/storage_users.txt', 'w')
+    sup_str = ''
+    for id in old_source:
+        sup_str += id
+        for old_act in old_source[id]:
+            sup_str += f' {old_act}'
+        for new_act in list_id:
+            sup_str += f' {new_act}'
+        sup_str +='\n'
+        info.writelines(sup_str)
+        sup_str = ''
+    info.close()
+
+
+
+
